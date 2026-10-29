@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Booster & Zen Space</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf4f8',
+                            100: '#fce7f3',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            750: '#831843',
+                            900: '#500724'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31103c 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(236, 72, 153, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 72, 153, 0.7);
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 6s ease-in-out infinite;
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.3);
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between min-h-screen selection:bg-pink-500 selection:text-white">
+
+    <!-- Ambient Canvas Background for Particles / Waves -->
+    <canvas id="ambientCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <!-- Main Container -->
+    <div class="relative z-10 flex flex-col flex-grow max-w-5xl mx-auto w-full p-4 md:p-6 pb-16">
+
+        <!-- Header -->
+        <header class="flex items-center justify-between py-4 mb-6 border-b border-white/10">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center shadow-lg glow-effect">
+                    <i class="fa-solid fa-seedling text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">MoodSanctuary</h1>
+                    <p class="text-xs text-slate-400">Ruang Aman & Penguat Suasana Hati</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Ambient Audio/Wave Toggle Button -->
+                <button id="soundToggleBtn" onclick="toggleAmbientSound()" class="px-3 py-2 rounded-xl glass-card text-xs font-medium text-pink-300 flex items-center space-x-2 transition hover:bg-white/10">
+                    <i id="soundIcon" class="fa-solid fa-volume-xmark text-pink-400"></i>
+                    <span id="soundText" class="hidden sm:inline">Zen Waves: Off</span>
+                </button>
+
+                <!-- Profile Switch / Reset Name -->
+                <button onclick="logoutUser()" class="px-3 py-2 rounded-xl glass-card text-xs font-medium text-slate-300 hover:text-white transition flex items-center space-x-1">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span id="headerUserName" class="hidden sm:inline">Tamu</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- VIEW 1: LOGIN / WELCOME GATEKEEPER -->
+        <section id="welcomeView" class="flex flex-col items-center justify-center flex-grow py-12 transition-all duration-500">
+            <div class="glass-card p-8 md:p-10 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden border border-white/15">
+                <div class="absolute -top-12 -right-12 w-36 h-36 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl animate-float">
+                    <i class="fa-solid fa-face-smile-beam text-3xl text-white"></i>
+                </div>
+
+                <h2 class="text-2xl md:text-3xl font-bold mb-2">Hai! ✨</h2>
+                <p class="text-sm text-slate-300 mb-6 leading-relaxed">Selamat datang. Siapa nama panggilanmu?</p>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <input type="text" id="userNameInput" required placeholder="Ketik nama kamu di sini..." 
+                            class="w-full px-4 py-3 rounded-xl bg-slate-900/60 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 text-center font-medium transition">
+                    </div>
+                    <button type="submit" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold shadow-lg hover:opacity-95 transition transform hover:scale-[1.02] active:scale-95">
+                        Mulai Perjalanan <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- VIEW 2: DASHBOARD / HOME (Hidden initially) -->
+        <section id="dashboardView" class="hidden flex-col space-y-6 transition-all duration-500">
+            
+            <!-- Greeting & Dynamic Banner -->
+            <div class="glass-card p-6 md:p-8 rounded-3xl relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-pink-500/10 to-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="space-y-2 mb-4 md:mb-0 relative z-10">
+                    <div id="greetingTimeBadge" class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/30 text-pink-300 text-xs font-medium">
+                        <i class="fa-solid fa-sun text-yellow-300"></i>
+                        <span id="timeBadgeText">Selamat Pagi</span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold" id="greetingUserTitle">Senang melihatmu lagi, Sahabat!</h2>
+                    <p class="text-sm text-slate-300 max-w-xl" id="greetingSubtitle">Bagaimana perasaan hatimu saat ini? Mari kita buat harimu sedikit lebih cerah.</p>
+                </div>
+                <div class="relative z-10">
+                    <button onclick="triggerConfetti()" class="px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-semibold text-white transition flex items-center space-x-2 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
+                        <span>Kirim Energi Positif</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid Layout for Main Interactive Tools -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Left 2 Columns: Mood Checker & Affirmations / Quote Generator -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- 1. Mood Checker Section -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold flex items-center space-x-2">
+                                <i class="fa-solid fa-heart-pulse text-pink-400"></i>
+                                <span>Bagaimana Moodmu Saat Ini?</span>
+                            </h3>
+                            <span class="text-xs text-slate-400">Pilih salah satu</span>
+                        </div>
+
+                        <!-- Mood Buttons -->
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                            <button onclick="selectMood('happy')" class="mood-btn flex flex-col items-center justify-center p-3 rounded-2xl glass-card glass-card-hover transition space-y-2 group" data-mood="happy">
+                                <span class="text-2xl group-hover:scale-125 transition">😊</span>
+                                <span class="text-xs font-medium text-slate-200">Senang</span>
+                            </button>
+                            <button onclick="selectMood('tired')" class="mood-btn flex flex-col items-center justify-center p-3 rounded-2xl glass-card glass-card-hover transition space-y-2 group" data-mood="tired">
+                                <span class="text-2xl group-hover:scale-125 transition">🔋</span>
+                                <span class="text-xs font-medium text-slate-200">Lelah</span>
+                            </button>
+                            <button onclick="selectMood('stressed')" class="mood-btn flex flex-col items-center justify-center p-3 rounded-2xl glass-card glass-card-hover transition space-y-2 group" data-mood="stressed">
+                                <span class="text-2xl group-hover:scale-125 transition">🌪️</span>
+                                <span class="text-xs font-medium text-slate-200">Stres</span>
+                            </button>
+                            <button onclick="selectMood('excited')" class="mood-btn flex flex-col items-center justify-center p-3 rounded-2xl glass-card glass-card-hover transition space-y-2 group" data-mood="excited">
+                                <span class="text-2xl group-hover:scale-125 transition">🔥</span>
+                                <span class="text-xs font-medium text-slate-200">Semangat</span>
+                            </button>
+                            <button onclick="selectMood('sad')" class="mood-btn flex flex-col items-center justify-center p-3 rounded-2xl glass-card glass-card-hover transition space-y-2 group col-span-2 sm:col-span-1">
+                                <span class="text-2xl group-hover:scale-125 transition">🌧️</span>
+                                <span class="text-xs font-medium text-slate-200">Sedih</span>
+                            </button>
+                        </div>
+
+                        <!-- Dynamic Mood Response Box -->
+                        <div id="moodResponseBox" class="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-sm text-pink-200 hidden animate-fade">
+                            <p id="moodResponseText" class="font-medium leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Motivational Quote & Affirmation Generator -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold flex items-center space-x-2">
+                                <i class="fa-solid fa-quote-left text-purple-400"></i>
+                                <span>Refleksi & Kutipan Inspiratif</span>
+                            </h3>
+                            <button onclick="shuffleQuote()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-medium text-purple-300 transition flex items-center space-x-1.5">
+                                <i class="fa-solid fa-shuffle"></i>
+                                <span>Kutipan Lain</span>
+                            </button>
+                        </div>
+
+                        <div class="p-5 rounded-2xl bg-slate-900/50 border border-white/10 space-y-3 relative">
+                            <i class="fa-solid fa-quote-right absolute right-4 bottom-2 text-4xl text-white/5 pointer-events-none"></i>
+                            <p id="quoteText" class="text-sm md:text-base font-medium text-slate-100 italic leading-relaxed">
+                                "Setiap hari adalah lembaran baru. Kamu tidak harus langsung sempurna, yang penting kamu melangkah dengan niat baik."
+                            </p>
+                            <p id="quoteAuthor" class="text-xs text-purple-300 font-semibold">— Catatan Hati</p>
+                        </div>
+
+                        <!-- Positive Affirmation Custom Generator -->
+                        <div class="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="text-xs text-slate-300">
+                                Butuh validasi atau pujian hangat saat ini?
+                            </div>
+                            <button onclick="generateCustomAffirmation()" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/30 text-xs font-semibold text-purple-200 transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-sparkles text-purple-300"></i>
+                                <span>Buat Afirmasi Positif</span>
+                            </button>
+                        </div>
+                        <div id="affirmationBox" class="hidden p-3.5 rounded-xl bg-purple-900/30 border border-purple-500/20 text-xs text-purple-200 font-medium text-center">
+                        </div>
+                    </div>
+
+                    <!-- 3. Arcade Center (Flappy Bird, Snake, Catch the Heart) -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-2 border-b border-white/10">
+                            <div>
+                                <h3 class="text-base font-bold flex items-center space-x-2">
+                                    <i class="fa-solid fa-gamepad text-pink-400"></i>
+                                    <span>Pusat Arkade Zen (Arcade Center)</span>
+                                </h3>
+                                <p class="text-xs text-slate-300">Pilih game favoritmu untuk melepas penat dan bersenang-senang.</p>
+                            </div>
+                            <!-- Game Tabs -->
+                            <div class="flex space-x-1.5 bg-slate-900/60 p-1 rounded-xl border border-white/10">
+                                <button onclick="switchGame('catch')" id="tabCatch" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-600 text-white transition shadow">Tangkap Hati</button>
+                                <button onclick="switchGame('flappy')" id="tabFlappy" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">Flappy Bird</button>
+                                <button onclick="switchGame('snake')" id="tabSnake" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">Snake Game</button>
+                            </div>
+                        </div>
+
+                        <!-- GAME 1: Catch the Heart -->
+                        <div id="gameContainerCatch" class="space-y-3">
+                            <div class="flex justify-between items-center text-xs text-slate-300">
+                                <span id="catchHighScore" class="bg-pink-500/20 px-2.5 py-1 rounded-full text-pink-300 font-medium">Skor Tertinggi: 0</span>
+                                <span>Tangkap sebanyak mungkin hati dalam 20 detik!</span>
+                            </div>
+                            <div id="gameArena" class="relative w-full h-64 rounded-2xl bg-slate-950/60 border border-white/10 overflow-hidden flex items-center justify-center cursor-crosshair select-none">
+                                <div id="gameOverlayText" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/85 backdrop-blur-sm z-20 text-center p-4">
+                                    <i class="fa-solid fa-heart text-3xl text-pink-500 mb-2 animate-bounce"></i>
+                                    <h4 class="font-bold text-sm text-white mb-1">Tangkap Hati 💖</h4>
+                                    <p class="text-xs text-slate-300 mb-3">Klik tombol untuk mulai bermain!</p>
+                                    <button onclick="startCatchGame()" class="px-4 py-2 rounded-xl bg-pink-600 text-white text-xs font-bold hover:bg-pink-500 transition shadow-lg">
+                                        Mulai Game
+                                    </button>
+                                </div>
+                                <div id="gameStats" class="absolute top-2 left-3 right-3 flex justify-between text-xs font-semibold text-slate-300 z-10 hidden">
+                                    <span class="bg-black/40 px-2 py-0.5 rounded-md">Skor: <span id="currentScore" class="text-pink-400">0</span></span>
+                                    <span class="bg-black/40 px-2 py-0.5 rounded-md">Waktu: <span id="timeLeft" class="text-yellow-400">20</span>s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME 2: Flappy Bird -->
+                        <div id="gameContainerFlappy" class="space-y-3 hidden">
+                            <div class="flex justify-between items-center text-xs text-slate-300">
+                                <span id="flappyHighScore" class="bg-indigo-500/20 px-2.5 py-1 rounded-full text-indigo-300 font-medium">Skor Tertinggi: 0</span>
+                                <span>Tekan Tombol Spasi atau Klik untuk Terbang!</span>
+                            </div>
+                            <div class="relative w-full h-64 rounded-2xl bg-sky-950/60 border border-white/10 overflow-hidden flex items-center justify-center select-none">
+                                <canvas id="flappyCanvas" class="w-full h-full block cursor-pointer"></canvas>
+                                <div id="flappyOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/85 backdrop-blur-sm z-20 text-center p-4">
+                                    <i class="fa-solid fa-dove text-3xl text-indigo-400 mb-2 animate-bounce"></i>
+                                    <h4 class="font-bold text-sm text-white mb-1">Zen Flappy Bird 🕊️</h4>
+                                    <p class="text-xs text-slate-300 mb-3">Lewati rintangan pipa tanpa menabrak.</p>
+                                    <button onclick="startFlappyGame()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition shadow-lg">
+                                        Mulai Flappy
+                                    </button>
+                                </div>
+                                <div id="flappyLiveScore" class="absolute top-2 left-3 text-xs font-semibold text-white bg-black/40 px-2.5 py-1 rounded-md z-10 hidden">
+                                    Skor: <span id="flappyScoreVal" class="text-indigo-300">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GAME 3: Snake Game -->
+                        <div id="gameContainerSnake" class="space-y-3 hidden">
+                            <div class="flex justify-between items-center text-xs text-slate-300">
+                                <span id="snakeHighScore" class="bg-emerald-500/20 px-2.5 py-1 rounded-full text-emerald-300 font-medium">Skor Tertinggi: 0</span>
+                                <span>Gunakan Tombol Panah (Arrow Keys) untuk Bergerak</span>
+                            </div>
+                            <div class="relative w-full h-64 rounded-2xl bg-slate-950/80 border border-white/10 overflow-hidden flex items-center justify-center select-none">
+                                <canvas id="snakeCanvas" class="w-full h-full block"></canvas>
+                                <div id="snakeOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/85 backdrop-blur-sm z-20 text-center p-4">
+                                    <i class="fa-solid fa-worm text-3xl text-emerald-400 mb-2 animate-bounce"></i>
+                                    <h4 class="font-bold text-sm text-white mb-1">Classic Snake 🐍</h4>
+                                    <p class="text-xs text-slate-300 mb-3">Makan makanan hijau untuk tumbuh panjang.</p>
+                                    <button onclick="startSnakeGame()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 transition shadow-lg">
+                                        Mulai Snake
+                                    </button>
+                                </div>
+                                <div id="snakeLiveScore" class="absolute top-2 left-3 text-xs font-semibold text-white bg-black/40 px-2.5 py-1 rounded-md z-10 hidden">
+                                    Skor: <span id="snakeScoreVal" class="text-emerald-300">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Right 1 Column: Quick Breathing & Additional Zen Tools -->
+                <div class="space-y-6">
+                    
+                    <!-- Breathing / Relaxation Box -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 text-center">
+                        <h3 class="text-base font-bold flex items-center space-x-2 justify-center">
+                            <i class="fa-solid fa-wind text-cyan-400"></i>
+                            <span>Pernafasan Singkat (Box Breathing)</span>
+                        </h3>
+                        <p class="text-xs text-slate-300">Ikuti ritme lingkaran untuk menenangkan detak jantung dan pikiranmu.</p>
+                        
+                        <div class="relative w-28 h-28 mx-auto flex items-center justify-center">
+                            <div id="breathCircle" class="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40 transition-all duration-1000 scale-75"></div>
+                            <span id="breathText" class="relative z-10 text-xs font-bold text-cyan-200">Tarik Napas</span>
+                        </div>
+                        <button id="breathToggleBtn" onclick="toggleBreathing()" class="px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-xs font-semibold text-cyan-300 transition">
+                            Mulai Latihan
+                        </button>
+                    </div>
+
+                    <!-- Daily Gratitude Journal / Notes -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-base font-bold flex items-center space-x-2">
+                            <i class="fa-solid fa-feather text-pink-400"></i>
+                            <span>Catatan Syukur Harian</span>
+                        </h3>
+                        <p class="text-xs text-slate-300">Tuliskan 1 hal kecil yang membuatmu bersyukur hari ini:</p>
+                        <textarea id="gratitudeInput" rows="3" placeholder="Contoh: Secangkir kopi hangat di pagi hari..." class="w-full p-3 rounded-xl bg-slate-900/60 border border-white/20 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"></textarea>
+                        <button onclick="saveGratitude()" class="w-full py-2 rounded-xl bg-pink-600/30 hover:bg-pink-600/50 border border-pink-500/30 text-xs font-semibold text-pink-200 transition">
+                            Simpan Catatan Syukur
+                        </button>
+                        <div id="gratitudeSavedMsg" class="text-center text-xs text-emerald-400 font-medium hidden">
+                            Catatan tersimpan di hati & memori browser! ✨
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-xs text-slate-500 py-4 border-t border-white/5">
+            <p>MoodSanctuary &bull; Dibuat dengan penuh ketenangan & kasih sayang untuk harimu.</p>
+        </footer>
+
+    </div>
+
+    <!-- Custom Modal Message Box (No native alert) -->
+    <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="glass-card p-6 rounded-3xl max-w-sm w-full text-center space-y-4 shadow-2xl border border-white/20 animate-fade">
+            <div id="modalIconContainer" class="w-12 h-12 rounded-2xl bg-pink-500/20 text-pink-400 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 id="modalTitle" class="text-lg font-bold text-white">Pemberitahuan</h3>
+            <p id="modalMessage" class="text-xs text-slate-300 leading-relaxed"></p>
+            <button onclick="closeModal()" class="w-full py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold transition">
+                Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Variables
+        let userData = {
+            name: localStorage.getItem('mood_user_name') || ''
+        };
+        let catchHighScore = parseInt(localStorage.getItem('mood_catch_high') || '0');
+        let flappyHighScore = parseInt(localStorage.getItem('mood_flappy_high') || '0');
+        let snakeHighScore = parseInt(localStorage.getItem('mood_snake_high') || '0');
+
+        let isAudioPlaying = false;
+        let audioContext = null;
+        let oscillator = null;
+        let gainNode = null;
+
+        // Catch the Heart Game State
+        let gameInterval = null;
+        let heartSpawnInterval = null;
+        let gameScore = 0;
+        let gameTimeLeft = 20;
+        let isGameActive = false;
+
+        // Flappy Bird Game State
+        let flappyActive = false;
+        let flappyAnimFrame = null;
+        let bird = { x: 50, y: 120, radius: 12, gravity: 0.45, lift: -7.5, velocity: 0 };
+        let pipes = [];
+        let flappyScore = 0;
+        let pipeTimer = 0;
+
+        // Snake Game State
+        let snakeActive = false;
+        let snakeInterval = null;
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let dx = 10;
+        let dy = 0;
+        let snakeScore = 0;
+        const gridGridSize = 16;
+
+        // Quotes Repository
+        const quotes = [
+            { text: "Jangan bandingkan prosesmu dengan orang lain. Setiap bunga mekar di musimnya masing-masing.", author: "Anonim" },
+            { text: "Hari yang buruk bukan berarti hidupmu buruk. Tarik napas dalam-dalam, besok ada kesempatan baru.", author: "Catatan Hati" },
+            { text: "Kamu sudah bertahan sejauh ini, melewati 100% hari-hari terburukmu sebelumnya. Kamu jauh lebih kuat dari yang kamu tahu.", author: "Pengingat Lembut" },
+            { text: "Istirahatlah jika lelah. Dunia tidak akan runtuh hanya karena kamu meluangkan waktu untuk dirimu sendiri.", author: "Kesehatan Mental" },
+            { text: "Kecil atau besar, setiap kemajuan kecil tetaplah sebuah kemenangan.", author: "Motivasi Harian" },
+            { text: "Satu senyuman kecil bisa meringankan beban di dada. Lepaskan beban yang bukan kendalimu.", author: "Zen Wisdom" }
+        ];
+
+        // Affirmations Repository
+        const affirmations = [
+            "Kamu berharga, dicintai, dan layak mendapatkan ketenangan hari ini.",
+            "Pikiran negatif hanyalah awan lewat; kamu adalah langit luas yang abadi.",
+            "Setiap langkah kecil yang kamu ambil hari ini adalah bentuk cinta pada diri sendiri.",
+            "Tubuh dan pikiranmu layak mendapatkan istirahat yang damai dan pemulihan.",
+            "Kamu tidak perlu membuktikan apa pun kepada siapa pun. Cukup jadi dirimu sendiri."
+        ];
+
+        // Mood Responses
+        const moodResponses = {
+            happy: "Energi positifmu sangat menular! Pertahankan senyuman itu dan sebarkan kebaikan ke sekitarmu hari ini! ✨",
+            tired: "Tidak apa-apa merasa lelah. Tubuhmu sedang meminta waktu jeda. Rebah sejenak, minum segelas air hangat, dan jangan memaksakan diri. 🍵",
+            stressed: "Tarif napas dalam... Hembuskan perlahan. Stres ini hanya sementara. Selesaikan satu hal kecil satu per satu, kamu pasti bisa mengatasinya. 🍃",
+            excited: "Luar biasa! Salurkan semangat membara ini untuk mewujudkan mimpimu atau berbagi kebahagiaan dengan orang terdekat! 🔥",
+            sad: "Peluk jauh untukmu. Rasakan emosi itu tanpa menghakimi diri sendiri. Badai pasti berlalu, dan matahari akan bersinar lagi untukmu. 🌧️💛"
+        };
+
+        // Initialization on Load
+        window.onload = function() {
+            initCanvas();
+            checkUserState();
+            document.getElementById('catchHighScore').innerText = `Skor Tertinggi: ${catchHighScore}`;
+            document.getElementById('flappyHighScore').innerText = `Skor Tertinggi: ${flappyHighScore}`;
+            document.getElementById('snakeHighScore').innerText = `Skor Tertinggi: ${snakeHighScore}`;
+        };
+
+        // Handle User Login
+        function handleLogin(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('userNameInput').value.trim();
+            if(!nameInput) return;
+
+            userData.name = nameInput;
+            localStorage.setItem('mood_user_name', nameInput);
+            transitionToDashboard();
+        }
+
+        function checkUserState() {
+            if(userData.name) {
+                transitionToDashboard();
+            } else {
+                document.getElementById('welcomeView').classList.remove('hidden');
+                document.getElementById('dashboardView').classList.add('hidden');
+            }
+        }
+
+        function transitionToDashboard() {
+            document.getElementById('welcomeView').classList.add('hidden');
+            const dashboard = document.getElementById('dashboardView');
+            dashboard.classList.remove('hidden');
+            dashboard.classList.add('flex');
+
+            document.getElementById('headerUserName').innerText = userData.name;
+            updateGreetingTime();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('mood_user_name');
+            userData.name = '';
+            stopAmbientSound();
+            stopAllGames();
+            checkUserState();
+        }
+
+        function stopAllGames() {
+            isGameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(heartSpawnInterval);
+            flappyActive = false;
+            cancelAnimationFrame(flappyAnimFrame);
+            snakeActive = false;
+            clearInterval(snakeInterval);
+        }
+
+        // Dynamic Time Greeting
+        function updateGreetingTime() {
+            const hour = new Date().getHours();
+            let badgeText = "Selamat Pagi";
+            let iconClass = "fa-solid fa-sun text-yellow-300";
+            let titlePrefix = "Pagi yang cerah";
+
+            if (hour >= 11 && hour < 15) {
+                badgeText = "Selamat Siang";
+                iconClass = "fa-solid fa-cloud-sun text-amber-300";
+                titlePrefix = "Semangat siang";
+            } else if (hour >= 15 && hour < 18) {
+                badgeText = "Selamat Sore";
+                iconClass = "fa-solid fa-cloud-moon text-orange-300";
+                titlePrefix = "Sore yang tenang";
+            } else if (hour >= 18 || hour < 4) {
+                badgeText = "Selamat Malam";
+                iconClass = "fa-solid fa-moon text-indigo-300";
+                titlePrefix = "Malam yang damai";
+            }
+
+            document.getElementById('timeBadgeText').innerText = badgeText;
+            document.getElementById('greetingTimeBadge').querySelector('i').className = iconClass;
+            document.getElementById('greetingUserTitle').innerText = `${titlePrefix}, ${userData.name}! ✨`;
+        }
+
+        // Mood Selection Handler
+        function selectMood(moodKey) {
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('border-pink-500', 'bg-white/15');
+                if(btn.getAttribute('data-mood') === moodKey) {
+                    btn.classList.add('border-pink-500', 'bg-white/15');
+                }
+            });
+
+            const respBox = document.getElementById('moodResponseBox');
+            const respText = document.getElementById('moodResponseText');
+            respText.innerText = moodResponses[moodKey];
+            respBox.classList.remove('hidden');
+        }
+
+        // Quote Shuffle
+        function shuffleQuote() {
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('quoteText').innerText = `"${randomQuote.text}"`;
+            document.getElementById('quoteAuthor').innerText = `— ${randomQuote.author}`;
+        }
+
+        function generateCustomAffirmation() {
+            const randomAff = affirmations[Math.floor(Math.random() * affirmations.length)];
+            const box = document.getElementById('affirmationBox');
+            box.innerText = `✨ "${randomAff}"`;
+            box.classList.remove('hidden');
+        }
+
+        function triggerConfetti() {
+            showModal("Energi Positif Terkirim! 💖", `Halo ${userData.name}, semoga hari ini membawa keajaiban kecil, senyuman tulus, dan ketenangan batin untukmu.`);
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function saveGratitude() {
+            const input = document.getElementById('gratitudeInput');
+            if(!input.value.trim()) return;
+            const msg = document.getElementById('gratitudeSavedMsg');
+            msg.classList.remove('hidden');
+            input.value = '';
+            setTimeout(() => msg.classList.add('hidden'), 4000);
+        }
+
+        // ARCADE TABS SWITCHER
+        function switchGame(gameKey) {
+            stopAllGames();
+            document.getElementById('gameContainerCatch').classList.add('hidden');
+            document.getElementById('gameContainerFlappy').classList.add('hidden');
+            document.getElementById('gameContainerSnake').classList.add('hidden');
+
+            document.getElementById('tabCatch').className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition";
+            document.getElementById('tabFlappy').className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition";
+            document.getElementById('tabSnake').className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition";
+
+            if(gameKey === 'catch') {
+                document.getElementById('gameContainerCatch').classList.remove('hidden');
+                document.getElementById('tabCatch').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-600 text-white transition shadow";
+            } else if(gameKey === 'flappy') {
+                document.getElementById('gameContainerFlappy').classList.remove('hidden');
+                document.getElementById('tabFlappy').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition shadow";
+            } else if(gameKey === 'snake') {
+                document.getElementById('gameContainerSnake').classList.remove('hidden');
+                document.getElementById('tabSnake').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition shadow";
+                initSnakeCanvas();
+            }
+        }
+
+        // MINI GAME 1: CATCH THE HEART
+        function startCatchGame() {
+            const overlay = document.getElementById('gameOverlayText');
+            const stats = document.getElementById('gameStats');
+            const arena = document.getElementById('gameArena');
+
+            overlay.classList.add('hidden');
+            stats.classList.remove('hidden');
+
+            gameScore = 0;
+            gameTimeLeft = 20;
+            isGameActive = true;
+            document.getElementById('currentScore').innerText = gameScore;
+            document.getElementById('timeLeft').innerText = gameTimeLeft;
+
+            arena.querySelectorAll('.floating-heart').forEach(el => el.remove());
+
+            gameInterval = setInterval(() => {
+                gameTimeLeft--;
+                document.getElementById('timeLeft').innerText = gameTimeLeft;
+                if (gameTimeLeft <= 0) endCatchGame();
+            }, 1000);
+
+            heartSpawnInterval = setInterval(() => {
+                if(!isGameActive) return;
+                spawnHeart(arena);
+            }, 700);
+        }
+
+        function spawnHeart(arena) {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.className = 'floating-heart absolute text-2xl cursor-pointer transition transform hover:scale-125 select-none';
+            
+            const maxX = arena.clientWidth - 40;
+            const maxY = arena.clientHeight - 40;
+            const randomX = Math.floor(Math.random() * Math.max(maxX, 10));
+            const randomY = Math.floor(Math.random() * Math.max(maxY, 10));
+
+            heart.style.left = `${randomX}px`;
+            heart.style.top = `${randomY}px`;
+
+            heart.onmousedown = (e) => {
+                e.stopPropagation();
+                if(!isGameActive) return;
+                gameScore++;
+                document.getElementById('currentScore').innerText = gameScore;
+                heart.remove();
+            };
+
+            heart.ontouchstart = (e) => {
+                e.stopPropagation();
+                if(!isGameActive) return;
+                gameScore++;
+                document.getElementById('currentScore').innerText = gameScore;
+                heart.remove();
+            };
+
+            arena.appendChild(heart);
+
+            setTimeout(() => {
+                if(heart.parentElement) heart.remove();
+            }, 1200);
+        }
+
+        function endCatchGame() {
+            isGameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(heartSpawnInterval);
+
+            const arena = document.getElementById('gameArena');
+            arena.querySelectorAll('.floating-heart').forEach(el => el.remove());
+            document.getElementById('gameStats').classList.add('hidden');
+
+            if(gameScore > catchHighScore) {
+                catchHighScore = gameScore;
+                localStorage.setItem('mood_catch_high', catchHighScore);
+                document.getElementById('catchHighScore').innerText = `Skor Tertinggi: ${catchHighScore}`;
+            }
+
+            const overlay = document.getElementById('gameOverlayText');
+            overlay.innerHTML = `
+                <i class="fa-solid fa-award text-3xl text-yellow-400 mb-2"></i>
+                <h4 class="font-bold text-sm text-white mb-1">Permainan Selesai! 🎉</h4>
+                <p class="text-xs text-slate-300 mb-3">Skor kamu: <b class="text-pink-400 text-sm">${gameScore}</b> hati terkumpul.</p>
+                <button onclick="startCatchGame()" class="px-4 py-2 rounded-xl bg-pink-600 text-white text-xs font-bold hover:bg-pink-500 transition shadow-lg">
+                    Main Lagi
+                </button>
+            `;
+            overlay.classList.remove('hidden');
+        }
+
+        // MINI GAME 2: FLAPPY BIRD
+        function startFlappyGame() {
+            const canvas = document.getElementById('flappyCanvas');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            document.getElementById('flappyOverlay').classList.add('hidden');
+            document.getElementById('flappyLiveScore').classList.remove('hidden');
+
+            bird = { x: 50, y: canvas.height / 2, radius: 12, gravity: 0.4, lift: -6.5, velocity: 0 };
+            pipes = [];
+            flappyScore = 0;
+            pipeTimer = 0;
+            flappyActive = true;
+            document.getElementById('flappyScoreVal').innerText = flappyScore;
+
+            // Click / Space handler
+            canvas.onclick = () => { if(flappyActive) bird.velocity = bird.lift; };
+            window.onkeydown = (e) => {
+                if(e.code === 'Space' && flappyActive) {
+                    e.preventDefault();
+                    bird.velocity = bird.lift;
+                }
+            };
+
+            flappyLoop(canvas);
+        }
+
+        function flappyLoop(canvas) {
+            if(!flappyActive) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Bird physics
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            if(bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+                endFlappyGame();
+                return;
+            }
+
+            // Draw Bird
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pipes handler
+            pipeTimer++;
+            if(pipeTimer % 90 === 0) {
+                const gap = 90;
+                const topHeight = Math.floor(Math.random() * (canvas.height - gap - 100)) + 40;
+                pipes.push({ x: canvas.width, top: topHeight, bottom: canvas.height - topHeight - gap, width: 45, passed: false });
+            }
+
+            for(let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= 2.2;
+
+                // Draw pipe
+                ctx.fillStyle = '#10b981';
+                ctx.fillRect(pipes[i].x, 0, pipes[i].width, pipes[i].top);
+                ctx.fillRect(pipes[i].x, canvas.height - pipes[i].bottom, pipes[i].width, pipes[i].bottom);
+
+                // Collision detection
+                if(
+                    bird.x + bird.radius > pipes[i].x && 
+                    bird.x - bird.radius < pipes[i].x + pipes[i].width && 
+                    (bird.y - bird.radius < pipes[i].top || bird.y + bird.radius > canvas.height - pipes[i].bottom)
+                ) {
+                    endFlappyGame();
+                    return;
+                }
+
+                // Score check
+                if(!pipes[i].passed && pipes[i].x + pipes[i].width < bird.x) {
+                    flappyScore++;
+                    pipes[i].passed = true;
+                    document.getElementById('flappyScoreVal').innerText = flappyScore;
+                }
+
+                if(pipes[i].x + pipes[i].width < 0) {
+                    pipes.splice(i, 1);
+                }
+            }
+
+            flappyAnimFrame = requestAnimationFrame(() => flappyLoop(canvas));
+        }
+
+        function endFlappyGame() {
+            flappyActive = false;
+            cancelAnimationFrame(flappyAnimFrame);
+            document.getElementById('flappyLiveScore').classList.add('hidden');
+
+            if(flappyScore > flappyHighScore) {
+                flappyHighScore = flappyScore;
+                localStorage.setItem('mood_flappy_high', flappyHighScore);
+                document.getElementById('flappyHighScore').innerText = `Skor Tertinggi: ${flappyHighScore}`;
+            }
+
+            const overlay = document.getElementById('flappyOverlay');
+            overlay.innerHTML = `
+                <i class="fa-solid fa-gamepad text-3xl text-indigo-400 mb-2"></i>
+                <h4 class="font-bold text-sm text-white mb-1">Flappy Berakhir! 🕊️</h4>
+                <p class="text-xs text-slate-300 mb-3">Skor akhir kamu: <b class="text-indigo-400 text-sm">${flappyScore}</b> pipa dilewati.</p>
+                <button onclick="startFlappyGame()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition shadow-lg">
+                    Main Lagi
+                </button>
+            `;
+            overlay.classList.remove('hidden');
+        }
+
+        // MINI GAME 3: SNAKE GAME
+        function initSnakeCanvas() {
+            const canvas = document.getElementById('snakeCanvas');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startSnakeGame() {
+            const canvas = document.getElementById('snakeCanvas');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            document.getElementById('snakeOverlay').classList.add('hidden');
+            document.getElementById('snakeLiveScore').classList.remove('hidden');
+
+            snake = [
+                {x: 80, y: 80},
+                {x: 70, y: 80},
+                {x: 60, y: 80}
+            ];
+            dx = 10;
+            dy = 0;
+            snakeScore = 0;
+            snakeActive = true;
+            document.getElementById('snakeScoreVal').innerText = snakeScore;
+
+            spawnFood(canvas);
+
+            window.onkeydown = (e) => {
+                if(!snakeActive) return;
+                const keyPressed = e.keyCode;
+                const goingUp = dy === -10;
+                const goingDown = dy === 10;
+                const goingRight = dx === 10;
+                const goingLeft = dx === -10;
+
+                if (keyPressed === 37 && !goingRight) { dx = -10; dy = 0; }
+                if (keyPressed === 38 && !goingDown) { dx = 0; dy = -10; }
+                if (keyPressed === 39 && !goingLeft) { dx = 10; dy = 0; }
+                if (keyPressed === 40 && !goingUp) { dx = 0; dy = 10; }
+            };
+
+            clearInterval(snakeInterval);
+            snakeInterval = setInterval(() => {
+                if(!snakeActive) return;
+                mainSnakeLoop(canvas);
+            }, 100);
+        }
+
+        function spawnFood(canvas) {
+            food.x = Math.floor(Math.random() * ((canvas.width - 20) / 10)) * 10;
+            food.y = Math.floor(Math.random() * ((canvas.height - 20) / 10)) * 10;
+
+            snake.forEach(part => {
+                if(part.x === food.x && part.y === food.y) spawnFood(canvas);
+            });
+        }
+
+        function mainSnakeLoop(canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Move snake head
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+            // Wall collision
+            if(head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                endSnakeGame();
+                return;
+            }
+
+            // Self collision
+            for(let i=0; i<snake.length; i++) {
+                if(head.x === snake[i].x && head.y === snake[i].y) {
+                    endSnakeGame();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Eat food
+            if(head.x === food.x && head.y === food.y) {
+                snakeScore += 10;
+                document.getElementById('snakeScoreVal').innerText = snakeScore;
+                spawnFood(canvas);
+            } else {
+                snake.pop();
+            }
+
+            // Draw Food
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(food.x, food.y, 10, 10);
+
+            // Draw Snake
+            snake.forEach((part, index) => {
+                ctx.fillStyle = index === 0 ? '#10b981' : '#34d399';
+                ctx.fillRect(part.x, part.y, 9, 9);
+            });
+        }
+
+        function endSnakeGame() {
+            snakeActive = false;
+            clearInterval(snakeInterval);
+            document.getElementById('snakeLiveScore').classList.add('hidden');
+
+            if(snakeScore > snakeHighScore) {
+                snakeHighScore = snakeScore;
+                localStorage.setItem('mood_snake_high', snakeHighScore);
+                document.getElementById('snakeHighScore').innerText = `Skor Tertinggi: ${snakeHighScore}`;
+            }
+
+            const overlay = document.getElementById('snakeOverlay');
+            overlay.innerHTML = `
+                <i class="fa-solid fa-gamepad text-3xl text-emerald-400 mb-2"></i>
+                <h4 class="font-bold text-sm text-white mb-1">Game Over! 🐍</h4>
+                <p class="text-xs text-slate-300 mb-3">Skor akhir kamu: <b class="text-emerald-400 text-sm">${snakeScore}</b> poin.</p>
+                <button onclick="startSnakeGame()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 transition shadow-lg">
+                    Main Lagi
+                </button>
+            `;
+            overlay.classList.remove('hidden');
+        }
+
+        // Breathing Exercise
+        let isBreathingActive = false;
+        let breathInterval = null;
+
+        function toggleBreathing() {
+            const btn = document.getElementById('breathToggleBtn');
+            const circle = document.getElementById('breathCircle');
+            const text = document.getElementById('breathText');
+
+            if(isBreathingActive) {
+                stopBreathing();
+            } else {
+                isBreathingActive = true;
+                btn.innerText = "Hentikan Latihan";
+                btn.className = "px-4 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-xs font-semibold text-red-300 transition";
+
+                let phase = 0;
+                const phases = [
+                    { text: "Tarik Napas (4s)", scale: "scale-125", duration: 4000 },
+                    { text: "Tahan (4s)", scale: "scale-125", duration: 4000 },
+                    { text: "Hembuskan (4s)", scale: "scale-75", duration: 4000 }
+                ];
+
+                function runBreathPhase() {
+                    if(!isBreathingActive) return;
+                    const current = phases[phase];
+                    text.innerText = current.text;
+                    circle.className = `absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/60 transition-all duration-[4000ms] ${current.scale}`;
+
+                    breathInterval = setTimeout(() => {
+                        phase = (phase + 1) % phases.length;
+                        runBreathPhase();
+                    }, current.duration);
+                }
+                runBreathPhase();
+            }
+        }
+
+        function stopBreathing() {
+            isBreathingActive = false;
+            clearTimeout(breathInterval);
+            const btn = document.getElementById('breathToggleBtn');
+            const circle = document.getElementById('breathCircle');
+            const text = document.getElementById('breathText');
+
+            btn.innerText = "Mulai Latihan";
+            btn.className = "px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-xs font-semibold text-cyan-300 transition";
+            text.innerText = "Tarik Napas";
+            circle.className = "absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40 transition-all duration-1000 scale-75";
+        }
+
+        // Ambient Web Audio & Canvas Particles
+        function toggleAmbientSound() {
+            const btnText = document.getElementById('soundText');
+            const icon = document.getElementById('soundIcon');
+
+            if(isAudioPlaying) {
+                stopAmbientSound();
+                isAudioPlaying = false;
+                btnText.innerText = "Zen Waves: Off";
+                icon.className = "fa-solid fa-volume-xmark text-pink-400";
+            } else {
+                startAmbientSound();
+                isAudioPlaying = true;
+                btnText.innerText = "Zen Waves: On";
+                icon.className = "fa-solid fa-volume-high text-pink-400 animate-pulse";
+            }
+        }
+
+        function startAmbientSound() {
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                oscillator = audioContext.createOscillator();
+                gainNode = audioContext.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(174.61, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.03, audioContext.currentTime);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.start();
+            } catch(e) {}
+        }
+
+        function stopAmbientSound() {
+            if(oscillator) {
+                try {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                } catch(e) {}
+                oscillator = null;
+            }
+        }
+
+        function initCanvas() {
+            const canvas = document.getElementById('ambientCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            for(let i=0; i<25; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: Math.random() * 2.5 + 1,
+                    color: Math.random() > 0.5 ? 'rgba(236, 72, 153, 0.4)' : 'rgba(168, 85, 247, 0.4)',
+                    speedX: (Math.random() - 0.5) * 0.4,
+                    speedY: (Math.random() - 0.5) * 0.4
+                });
+            }
+
+            function animateCanvas() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+
+                    if(p.x < 0) p.x = width;
+                    if(p.x > width) p.x = 0;
+                    if(p.y < 0) p.y = height;
+                    if(p.y > height) p.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                });
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+        }
+    </script>
+</body>
+</html>
